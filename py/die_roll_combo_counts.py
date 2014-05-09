@@ -48,7 +48,7 @@ def combination_count_ordered_d_prog(n):
         # sum possibilities for rolls between 1 and 6 based on their pre-calculated values
         for j in range(1, 7):    # 1 ... 6
             if index - j >= 0:
-            	accumulator += running_solutions[index - j]
+                accumulator += running_solutions[index - j]
 
         running_solutions.append(accumulator)
 
@@ -56,57 +56,57 @@ def combination_count_ordered_d_prog(n):
 
 
 def combination_count_ordered_crappy_recursion(n):
-	"""
-	The crappy recursive solution
-	"""
-	assert n >= 1
+    """
+    The crappy recursive solution
+    """
+    assert n >= 1
 
-	accumulator = 0
-	for i in range(1, 7):
-		if n - i < 0:
-			pass
-		elif n - i == 0:
-			accumulator += 1
-		elif n - i == 1:
-			accumulator += 1
-		else:
-			accumulator += combination_count_ordered_crappy_recursion(n - i)
+    accumulator = 0
+    for i in range(1, 7):
+        if n - i < 0:
+            pass
+        elif n - i == 0:
+            accumulator += 1
+        elif n - i == 1:
+            accumulator += 1
+        else:
+            accumulator += combination_count_ordered_crappy_recursion(n - i)
 
-	return accumulator
+    return accumulator
 
 
 def combination_count_ordered_crappy_recursion_with_cache(n, previous_solutions=None):
-	"""
-	The crappy recursive solution, but with a cache to prevent recalculations
+    """
+    The crappy recursive solution, but with a cache to prevent recalculations
 
-	I am using a hash for the cache.  In retrospect, it is pretty obvious that
-	we need to calculate all previous solutions and, consequently, we could
-	store this information in a dense array.  However, this reductive logic
-	also leads to the dynamic programming solution that we already have above
-	and I think it is helpful for validating correctness to have the two
-	separate implementations.  
-	"""
-	assert n >= 1
+    I am using a hash for the cache.  In retrospect, it is pretty obvious that
+    we need to calculate all previous solutions and, consequently, we could
+    store this information in a dense array.  However, this reductive logic
+    also leads to the dynamic programming solution that we already have above
+    and I think it is helpful for validating correctness to have the two
+    separate implementations.  
+    """
+    assert n >= 1
 
-	if previous_solutions is None:
-		previous_solutions = {1: 1}    # seed with base case ... b/c it's nice?
+    if previous_solutions is None:
+        previous_solutions = {1: 1}    # seed with base case ... b/c it's nice?
 
-	accumulator = 0
-	for i in range(1, 7)[::-1]:    # fancy notation using the stride argument to count from 6 ... 1
-		if n - i < 0:
-			pass
-		elif n - i == 0:
-			accumulator += 1
-		elif n - i == 1:
-			accumulator += 1
-		else:
-			if (n - i) not in previous_solutions:
-   			    minus_i_count = combination_count_ordered_crappy_recursion_with_cache(n - i, previous_solutions)
-			    previous_solutions[n - i] = minus_i_count
+    accumulator = 0
+    for i in range(1, 7)[::-1]:    # fancy notation using the stride argument to count from 6 ... 1
+        if n - i < 0:
+            pass
+        elif n - i == 0:
+            accumulator += 1
+        elif n - i == 1:
+            accumulator += 1
+        else:
+            if (n - i) not in previous_solutions:
+                minus_i_count = combination_count_ordered_crappy_recursion_with_cache(n - i, previous_solutions)
+                previous_solutions[n - i] = minus_i_count
 
-			accumulator += previous_solutions[n - i]
+            accumulator += previous_solutions[n - i]
 
-	return accumulator
+    return accumulator
 
 
 def main(argv):
