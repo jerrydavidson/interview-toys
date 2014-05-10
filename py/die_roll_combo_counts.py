@@ -23,9 +23,93 @@ I went into the tank on this one.  I couldn't figure out a good way to map the d
 from the previous problems to this one.  I modified the recursive implementation and just went with that, 
 knowing it pretty much sucked.  
 
+Update:  I believe that the "order doesn't matter" solution should be solvable with a 2-dimensional array,
+where one dimension "adds numbers to the set of possibilities" and the second dimension is the desired 
+number to sum to.  A sample corner of the table might look like:
+
+1,2,3,4     1    2    3    5    6
+1,2,3       1    2    3    4    5
+1,2         1    2    2    3    3
+1           1    1    1    1    1
+
+            1    2    3    4    5
+
+The rule for populating this table is a bit funny.  The general rule is that any given element is the
+sum of two other elements in the table:
+
+    - The element in the row below it
+        - Ex:  the ways to add up to N with 4's certainly includes the case of N where there are no 4's
+    - The element in the column "X" units to the left where X is the new value in the set at this row
+        - Ex:  the ways to add up to N with another 4 is the same as the ways to add up to "N-4", which
+               we've already calculated
+
+The corner cases are that:
+
+    - The bottom row needs to be initialized properly
+        - There is no row below it, so the value at this virtual row should be assumed as 0
+    - There is a left-side "virtual" column for the "sum to 0" case.  This should be assumed as 1
+        - This applies when a new number (or coin?) is added to our set.  When the target sum is
+          exactly that number, we must obviously include one instance of the new number as a possible 
+          solution.  
+
+I have written the above rules to accommodate a more general case of the problem definition.  The set
+need not be contiguous values, nor start with a '1'.  The assumption is only that the set is composed
+of positive integer values.  
+
+Optimization:  Based on the rules we've established, we should never actually need more than the 
+previous row to calculate the next row.  This significantly improves our space complexity.  
+
+Run-time:  O(N * |set size|)
+Space:  O(N)
+
 """
 
 import sys
+
+
+def combination_count_unordered_d_prog(n):
+    """
+    The good dynamic programming solution
+
+    The algorithm implemented here is described in the module doc string above
+    """
+
+    # Note:  I decided to use a convention where the column for a "sum target"
+    #        was located at index "sum target - 1".  It might be better to
+    #        manually populate the "virtual column" for a sum target of 0 to
+    #        contain a 1 and then populate counts for "sum targets" at the 
+    #        index "sum target".  It's unclear to me if this improves or reduces
+    #        readability.  
+
+    # must be a sorted list values
+    values = list(range(1,7))
+
+    # initialize base "virtual row" to n 0's
+    previous_row = [0] * n
+
+    for value in values:
+        # initialize to None as a sort-of sanity check
+        current_row = [None] * n
+
+        # iterate through 1 to n
+        for sum_target in range(1, n+1):
+            # calculate table element for current sum_target
+            count_without_new_value = previous_row[sum_target-1]
+            
+            if value > sum_target:
+                count_with_new_value = 0
+            elif value == sum_target:
+                # include "virtual column" at 0
+                count_with_new_value = 1
+            else:
+                count_with_new_value = current_row[(sum_target - value) - 1]
+
+            current_row[sum_target-1] = count_without_new_value + count_with_new_value
+
+        # each row feeds into the next one
+        previous_row = current_row
+
+    return current_row[n-1]
 
 
 def combination_count_ordered_d_prog(n):
@@ -123,6 +207,11 @@ def main(argv):
 #    print "Slow recursive solution:\n    %d\n" % (combination_count_ordered_crappy_recursion(number))
 
     print "Less terrible recursive solution:\n    %d\n" % (combination_count_ordered_crappy_recursion_with_cache(number))
+
+    print "Calculating number of unordered combinations of values between 1 and 6 that will sum to:\n    %d\n" % (number)
+
+    print "Dynamic programming solution:\n    %d\n" % (combination_count_unordered_d_prog(number))
+
 
 
 
