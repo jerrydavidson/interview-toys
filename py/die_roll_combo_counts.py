@@ -87,6 +87,7 @@ def combination_count_unordered_d_prog(n):
     # initialize base "virtual row" to n 0's
     previous_row = [0] * n
 
+    # add values one at a time
     for value in values:
         # initialize to None as a sort-of sanity check
         current_row = [None] * n

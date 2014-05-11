@@ -51,24 +51,14 @@ def find_square_root_bounds(number, starting_lower_bound=2.0):
     return (current_bound / 2.0, current_bound)
 
 
-def main(argv):
-    if len(argv) < 2:
-        sys.stderr.write("Usage: %s <number>" % (argv[0],))
-        return 1
-
-    number = float(argv[1])
-    accuracy = 0.001
-    assert FLOAT_EQUALS_DIFF < accuracy
-
-    print "Estimating square root of %g with minimum accuracy of %g" % (number, accuracy)
-
+def estimate_square_root_fancy(number, accuracy):
     sqrt = None
     
     # special case: negative numbers or exact matches for 0 or 1
     if float_equals(number, 0.0):
         sqrt = 0.0
     elif number < 0.0:
-        sqrt = None
+        raise Exception('Cannot calculate square root on a negative number')
     elif float_equals(number, 1.0):
         sqrt = 1.0
     
@@ -101,11 +91,64 @@ def main(argv):
                     upper_bound = midpoint
         
             sqrt = lower_bound
+
+    return sqrt
+
+
+def estimate_square_root_simple(number, accuracy):
+    """
+    Bare-bones square root estimator
+
+    Set guaranteed lower and upper bounds on the solution and binary search until
+    we find something close enough
+    """
+
+    sqrt = None
     
-    if sqrt is not None:
-        print "Calculated estimated square root:\n  %g" % (sqrt)
+    # special case: negative numbers or exact matches for 0 or 1
+    if float_equals(number, 0.0):
+        sqrt = 0.0
+    elif number < 0.0:
+        raise Exception('Cannot calculate square root on a negative number')
+    # let's actually compute an estimated square root
     else:
-        print "Cannot calculate square root for a negative number.  What sort of imaginary number machine do you think this is?"
+        lower_bound = 0
+        upper_bound = max(number, 1.0)
+        
+        # binary search within bounds for an accurate estimate
+        while upper_bound - lower_bound > accuracy:
+            midpoint = (upper_bound + lower_bound) / 2.0
+            
+            if midpoint * midpoint < number:
+                lower_bound = midpoint
+            else:
+                upper_bound = midpoint
+            
+            sqrt = lower_bound
+    
+    return sqrt
+
+
+def main(argv):
+    if len(argv) < 2:
+        sys.stderr.write("Usage: %s <number>" % (argv[0],))
+        return 1
+
+    number = float(argv[1])
+    accuracy = 0.001
+    assert FLOAT_EQUALS_DIFF < accuracy
+
+    print "Estimating square root of %g with minimum accuracy of %g" % (number, accuracy)
+
+    sqrt_fancy = estimate_square_root_fancy(number, accuracy)
+    sqrt_simple = estimate_square_root_simple(number, accuracy)
+
+    print "Estimated square root (fancy):\n  %g" % (sqrt_fancy)
+    print "Estimated square root (simple):\n  %g" % (sqrt_simple)
+
+    diff = abs(sqrt_fancy - sqrt_simple)
+    if diff > accuracy:
+        print "[Warning]  Difference between square root estimations (%d) differs by more than accuracy (%d)" % (diff, accuracy)
 
 
 if __name__ == "__main__":
