@@ -15,6 +15,17 @@ public class KmpPreprocessor {
         }
     }
 
+    /* Why is this precalculation linear time?
+     *
+     * When we backtrack on a mismatch, we can, in the worst case, backtrack along the entire
+     * length of our current match.  This would *seem* to suggest that this could be O(n^2).
+     * However, these backtracking steps are *not* independent.  If, for instance, we backtracked
+     * all the way to the beginning of the string, we could not backtrack again when checking the
+     * next character.  Our backtracking is limited by the length of the current suffix match.  
+     * If we backtrack, then the length of our string match also does, diminishing our opportunity
+     * for backtracking on successive checks.  Ultimately, we cannot apply more "backtrack" steps
+     * than the number of characters visited (even if we backtrack multiple times in our calculations).
+     */
     public static int[] getLps(String pattern) {
     	int lps[] = new int[pattern.length()];
 
